@@ -1,0 +1,32 @@
+<VRTDataset rasterXSize="107856" rasterYSize="8000">
+  <VRTRasterBand dataType="Byte" band="1">
+    <SimpleSource>
+      <SourceFilename relativeToVRT="1">DS1007-1056DF103_d.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="31435" RasterYSize="11638" DataType="Byte" BlockXSize="31435" BlockYSize="1" />
+      <SrcRect xOff="3830" yOff="1670" xSize="27600" ySize="8000" />
+      <DstRect xOff="0" yOff="0" xSize="27600" ySize="8000" />
+    </SimpleSource>
+    <SimpleSource>
+      <SourceFilename relativeToVRT="1">DS1007-1056DF103_c.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="31435" RasterYSize="11638" DataType="Byte" BlockXSize="31435" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="1625" xSize="31435" ySize="8000" />
+      <DstRect xOff="24550" yOff="0" xSize="31435" ySize="8000" />
+    </SimpleSource>
+    <SimpleSource>
+      <SourceFilename relativeToVRT="1">DS1007-1056DF103_b.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="31435" RasterYSize="11638" DataType="Byte" BlockXSize="31435" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="1617" xSize="31435" ySize="8000" />
+      <DstRect xOff="53342" yOff="0" xSize="31435" ySize="8000" />
+    </SimpleSource>
+    <SimpleSource>
+      <SourceFilename relativeToVRT="1">DS1007-1056DF103_a.tif</SourceFilename>
+      <SourceBand>1</SourceBand>
+      <SourceProperties RasterXSize="31435" RasterYSize="11638" DataType="Byte" BlockXSize="31435" BlockYSize="1" />
+      <SrcRect xOff="0" yOff="1822" xSize="26251" ySize="8000" />
+      <DstRect xOff="81605" yOff="0" xSize="26251" ySize="8000" />
+    </SimpleSource>
+  </VRTRasterBand>
+</VRTDataset>
