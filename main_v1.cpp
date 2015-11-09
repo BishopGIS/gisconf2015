@@ -196,7 +196,7 @@ int main( int nArgc, char ** papszArgv )
     double dfDist3 = pt3.Distance(&pt4);
     double dfDist4 = pt4.Distance(&pt1);
 
-    // open dataset
+    // open input dataset
     GDALDataset *poSrcDataset = (GDALDataset *) GDALOpen( sFileName, GA_ReadOnly ); // GA_Update
     char* pszSpaRefDef = NULL;
     if( oDstOGRSpatialReference.exportToWkt(&pszSpaRefDef) != OGRERR_NONE)
@@ -220,9 +220,59 @@ int main( int nArgc, char ** papszArgv )
     SubCenterLine2.addPoint(&pt3);
     SubCenterLine2.Centroid(&ptEnd);
 
+    OGRLineString CenterLineLeft;
+    CenterLineLeft.addPoint(&ptCenter);
+    CenterLineLeft.addPoint(&ptBeg);
+
+    OGRLineString CenterLineRight;
+    CenterLineRight.addPoint(&ptCenter);
+    CenterLineRight.addPoint(&ptEnd);
+
     double dfHeightHyp = (dfWidth * dfFocusM) / dfFilmHalfWidth;
     //satellite height
     double dfHeight = sqrt( dfHeightHyp * dfHeightHyp - dfLen * dfLen);
+
+    // fix pt1, pt2 ...
+    double dfHeightHypTmp = sqrt(CenterLineLeft.get_Length() * CenterLineLeft.get_Length() + dfHeight * dfHeight);
+    double dfOffset = dfHeightHypTmp * dfFilmHalfWidth / dfFocusM;
+
+    double dx = ptBeg.getX() - ptCenter.getX();
+    double dy = ptBeg.getY() - ptCenter.getY();
+
+    double ux = dfOffset * dx / CenterLineLeft.get_Length();
+    double uy = dfOffset * dy / CenterLineLeft.get_Length();
+
+
+    pt4.setX(ptBeg.getX() - uy);
+    pt4.setY(ptBeg.getY() + ux);
+
+    ux = -dfOffset * dx / CenterLineLeft.get_Length();
+    uy = -dfOffset * dy / CenterLineLeft.get_Length();
+
+
+    pt1.setX(ptBeg.getX() - uy);
+    pt1.setY(ptBeg.getY() + ux);
+
+    dfHeightHypTmp = sqrt(CenterLineRight.get_Length() * CenterLineRight.get_Length() + dfHeight * dfHeight);
+    dfOffset = dfHeightHypTmp * dfFilmHalfWidth / dfFocusM;
+
+    dx = ptEnd.getX() - ptCenter.getX();
+    dy = ptEnd.getY() - ptCenter.getY();
+
+    ux = dfOffset * dx / CenterLineRight.get_Length();
+    uy = dfOffset * dy / CenterLineRight.get_Length();
+
+
+    pt2.setX(ptEnd.getX() - uy);
+    pt2.setY(ptEnd.getY() + ux);
+
+    ux = -dfOffset * dx / CenterLineRight.get_Length();
+    uy = -dfOffset * dy / CenterLineRight.get_Length();
+
+
+    pt3.setX(ptEnd.getX() - uy);
+    pt3.setY(ptEnd.getY() + ux);
+
 
     int nStepCount = SEGMENT_STEPS / 2;
 
@@ -266,9 +316,7 @@ int main( int nArgc, char ** papszArgv )
     nGCPPos++;
 
     //proceed left side of frame
-    OGRLineString CenterLineLeft;
-    CenterLineLeft.addPoint(&ptCenter);
-    CenterLineLeft.addPoint(&ptBeg);
+
     double dfStepLen = CenterLineLeft.get_Length() / nStepCount;
     double dfImageStepLen = double(poSrcDataset->GetRasterXSize()) / SEGMENT_STEPS;
     double dfImageCenterX = double(poSrcDataset->GetRasterXSize()) / 2;
@@ -313,14 +361,14 @@ int main( int nArgc, char ** papszArgv )
         OGRPoint pTmpPt;
         CenterLineLeft.Value(i, &pTmpPt);
 
-        double dfHeightHypTmp = sqrt(i * i + dfHeight * dfHeight);
-        double dfOffset = dfHeightHypTmp * dfFilmHalfWidth / dfFocusM;
+        dfHeightHypTmp = sqrt(i * i + dfHeight * dfHeight);
+        dfOffset = dfHeightHypTmp * dfFilmHalfWidth / dfFocusM;
         
-        double dx = pTmpPt.getX() - ptCenter.getX();
-        double dy = pTmpPt.getY() - ptCenter.getY();
+        dx = pTmpPt.getX() - ptCenter.getX();
+        dy = pTmpPt.getY() - ptCenter.getY();
 
-        double ux = dfOffset * dx / i;
-        double uy = dfOffset * dy / i;
+        ux = dfOffset * dx / i;
+        uy = dfOffset * dy / i;
 
         dfImageCenterX -= dfImageStepLen;
 
@@ -350,10 +398,7 @@ int main( int nArgc, char ** papszArgv )
         nGCPPos++;
     }
 
-    //proceed right side of frame
-    OGRLineString CenterLineRight;
-    CenterLineRight.addPoint(&ptCenter);
-    CenterLineRight.addPoint(&ptEnd);
+    //proceed right side of frame    
 
     dfStepLen = CenterLineRight.get_Length() / nStepCount;
     dfImageCenterX = double(poSrcDataset->GetRasterXSize()) / 2;
@@ -363,14 +408,14 @@ int main( int nArgc, char ** papszArgv )
         OGRPoint pTmpPt;
         CenterLineRight.Value(i, &pTmpPt);
 
-        double dfHeightHypTmp = sqrt(i * i + dfHeight * dfHeight);
-        double dfOffset = dfHeightHypTmp * dfFilmHalfWidth / dfFocusM;
+        dfHeightHypTmp = sqrt(i * i + dfHeight * dfHeight);
+        dfOffset = dfHeightHypTmp * dfFilmHalfWidth / dfFocusM;
         
-        double dx = pTmpPt.getX() - ptCenter.getX();
-        double dy = pTmpPt.getY() - ptCenter.getY();
+        dx = pTmpPt.getX() - ptCenter.getX();
+        dy = pTmpPt.getY() - ptCenter.getY();
 
-        double ux = dfOffset * dx / i;
-        double uy = dfOffset * dy / i;
+        ux = dfOffset * dx / i;
+        uy = dfOffset * dy / i;
 
         dfImageCenterX += dfImageStepLen;
 
@@ -400,10 +445,12 @@ int main( int nArgc, char ** papszArgv )
         nGCPPos++;
     }
 
+
     // add points to polygon
     OGRLinearRing Ring;
 
     Ring.addPoint(pt1.getX(), pt1.getY());
+    
     for(int i = aPt1.size() - 2; i >= 0; --i)
         Ring.addPoint(aPt1[i].getX(), aPt1[i].getY());
     for(size_t i = 0; i < aPt3.size() - 1; ++i)
@@ -427,7 +474,8 @@ int main( int nArgc, char ** papszArgv )
     OGREnvelope DstEnv;
     Rgn.getEnvelope(&DstEnv);
 
-    //SaveGeometry(CPLResetExtension(sFileName, "shp"), Rgn, oDstOGRSpatialReference);
+
+    SaveGeometry(CPLResetExtension(sFileName, "shp"), Rgn, oDstOGRSpatialReference);
 
     // search point along image
     // add GCP to opened raster
@@ -439,8 +487,7 @@ int main( int nArgc, char ** papszArgv )
 
     // create warper
     char **papszTO = NULL;
-    //papszTO = CSLSetNameValue( papszTO, "METHOD", "GCP_TPS" );
-    papszTO = CSLSetNameValue( papszTO, "MAX_GCP_ORDER", "1" );
+    papszTO = CSLSetNameValue( papszTO, "METHOD", "GCP_TPS" );
     papszTO = CSLSetNameValue( papszTO, "NUM_THREADS", "4" );
     papszTO = CSLSetNameValue( papszTO, "DST_SRS", pszSpaRefDef );
     papszTO = CSLSetNameValue( papszTO, "SRC_SRS", pszSpaRefDef );
@@ -455,7 +502,7 @@ int main( int nArgc, char ** papszArgv )
     double adfExtent[4];
     int nThisPixels, nThisLines;
 
-    //
+    // suggest the raster output size
     if( GDALSuggestedWarpOutput2( poSrcDataset, psInfo->pfnTransform, hTransformArg, adfThisGeoTransform, &nThisPixels, &nThisLines, adfExtent, 0 ) != CE_None )
     {
         printf( "Suggest Output failed\n" );
@@ -470,6 +517,7 @@ int main( int nArgc, char ** papszArgv )
 
     GDALSetGenImgProjTransformerDstGeoTransform( hTransformArg, adfThisGeoTransform);
 
+    // create new raster
     CPLString sOutputRasterPath = CPLResetExtension(sFileName, "tif");
     GDALDataset  *poDstDataset = poOutputDriver->Create(sOutputRasterPath, nPixels, nLines, poSrcDataset->GetRasterCount(), GDT_Byte, NULL );
     if( NULL == poDstDataset )
@@ -479,9 +527,6 @@ int main( int nArgc, char ** papszArgv )
     }
     poDstDataset->SetProjection( pszSpaRefDef );
     poDstDataset->SetGeoTransform( adfThisGeoTransform );
-
-    //GDALDestroyGenImgProjTransformer( hTransformArg );
-    //hTransformArg = GDALCreateGenImgProjTransformer2( poSrcDataset, poDstDataset, papszTO );
 
 #ifdef APRROX_MAXERROR
     hTransformArg = GDALCreateApproxTransformer( GDALGenImgProjTransform,  hTransformArg, APRROX_MAXERROR);
@@ -530,6 +575,7 @@ int main( int nArgc, char ** papszArgv )
         }
     }
 
+    // cleanup
     GDALDestroyWarpOptions( psWO );
     CSLDestroy( papszTO );
 
