@@ -228,9 +228,7 @@ int main( int nArgc, char ** papszArgv )
     CenterLineRight.addPoint(&ptCenter);
     CenterLineRight.addPoint(&ptEnd);
 
-    double dfHeightHyp = (dfWidth * dfFocusM) / dfFilmHalfWidth;
-    //satellite height
-    double dfHeight = sqrt( dfHeightHyp * dfHeightHyp - dfLen * dfLen);
+    double dfHeight = (dfWidth * dfFocusM) / dfFilmHalfWidth;
 
     // fix pt1, pt2 ...
     double dfHeightHypTmp = sqrt(CenterLineLeft.get_Length() * CenterLineLeft.get_Length() + dfHeight * dfHeight);
