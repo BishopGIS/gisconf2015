@@ -48,11 +48,7 @@ set(PROJECT_SOURCES
     main.cpp
 )
 
-if(WIN32)
-    add_executable(${APP_NAME} WIN32 ${PROJECT_HEADERS} ${PROJECT_SOURCES})
-else(WIN32)
-    add_executable(${APP_NAME} ${PROJECT_HEADERS} ${PROJECT_SOURCES})
-endif(WIN32)
+add_executable(${APP_NAME} ${PROJECT_HEADERS} ${PROJECT_SOURCES})
 
 if(GDAL_FOUND)
     target_link_libraries(${APP_NAME} ${GDAL_LIBRARIES})
